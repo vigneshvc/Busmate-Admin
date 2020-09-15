@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Busmate Admin</string>
-
-    <string name="server_address">https://apexcoders.in/busmate/</string>
+    <string name="server_address">http://192.168.0.103:8080/busmate/</string>
+    <!--    <string name="server_address">https://apexcoders.in/busmate/</string> -->
     <string name="loginfailed">Login failed! Try Again!!</string>
+    <string name="title_activity_show_missed_people_location">Map</string>
+
 </resources>

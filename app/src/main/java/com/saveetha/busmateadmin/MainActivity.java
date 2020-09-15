@@ -2,9 +2,13 @@ package com.saveetha.busmateadmin;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -50,8 +54,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStart() {
         super.onStart();
 
+
         sp = getSharedPreferences(PREFERENCENAME,MODE_PRIVATE);
         if(sp.getBoolean("loggedin",false)){
+            startService(new Intent(MainActivity.this,MissedPeopleService.class));
             startActivity(new Intent(this,ActionDashboardActivity.class));
             finish();
         }else{
@@ -93,8 +99,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 if(status.equals("success")){
                                     sp.edit().putBoolean("loggedin",true).apply();
                                     sp.edit().putString("user",jb.getString("username")).apply();
-                                    sp.edit().putString("stop_id",jb.getString("stop_id")).apply();
+                                    sp.edit().putString("bus_id",jb.getString("bus_id")).apply();
                                     startActivity(new Intent(MainActivity.this,ActionDashboardActivity.class));
+                                    startService(new Intent(MainActivity.this,MissedPeopleService.class));
                                     finish();
                                 }else{
                                     //failed login
