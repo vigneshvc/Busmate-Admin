@@ -33,7 +33,7 @@ import java.util.Map;
 public class AddUser extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     String TAG = "Adduser";
-    EditText usermail,userpass;
+    EditText usermail,userpass, username,usercontact;
     Button addupdatebutton;
     Spinner busSpinner,stopSpinner;
     String BusURL= "https://apexcoders.in/busmate/getbuses.php";
@@ -45,6 +45,8 @@ public class AddUser extends AppCompatActivity implements View.OnClickListener, 
         setContentView(R.layout.activity_add_user);
         usermail = findViewById(R.id.usermailEditText);
         userpass = findViewById(R.id.userpassEditText);
+        username = findViewById(R.id.usernameEditText);
+        usercontact = findViewById(R.id.usercontactEditText);
         addupdatebutton = findViewById(R.id.addupdatebutton);
         addupdatebutton.setOnClickListener(this);
         busSpinner = findViewById(R.id.busSpinner);
@@ -126,6 +128,8 @@ public class AddUser extends AppCompatActivity implements View.OnClickListener, 
             final String stop = stopSpinner.getSelectedItem().toString();
             final String usermailid = usermail.getText().toString();
             final String userpassword = userpass.getText().toString();
+            final String username = this.username.getText().toString();
+            final String usercontactno = usercontact.getText().toString();
             if(bus.equals("") || stop.equals("") || usermailid.equals("") || userpassword.equals("")){
                 addupdatebutton.setText("Try Again!");
             }
@@ -167,7 +171,8 @@ public class AddUser extends AppCompatActivity implements View.OnClickListener, 
                         params.put("password", userpassword);
                         params.put("busid",bus);
                         params.put("stopid",stop);
-
+                        params.put("username",username);
+                        params.put("usercontact",usercontactno);
                         return params;
                     }
                 };

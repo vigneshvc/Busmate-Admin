@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="52dp"
         android:fontFamily="sans-serif-condensed-light"
-        android:text="ADD USER"
+        android:text="ADD / UPDATE USER"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="0dp" />
 

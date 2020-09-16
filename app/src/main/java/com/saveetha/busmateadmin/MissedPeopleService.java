@@ -27,29 +27,32 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import static android.app.Notification.EXTRA_NOTIFICATION_ID;
 
 public class MissedPeopleService extends Service {
 
 
+    public String PREFERENCENAME = "busmateAdmin";
     String CHANNEL_ID="com.saveetha.busmateadmin.missedpeopleservice";
     String CHANNEL_NAME="Busmate Admin";
     String TAG = "MissedPeopleService";
     Handler handler;
     SharedPreferences sp;
     String busID;
-    public String PREFERENCENAME = "busmateAdmin";
     public MissedPeopleService() {
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        busID = getSharedPreferences(PREFERENCENAME,MODE_PRIVATE).getString("bus_id","");
         Bundle extras = intent.getExtras();
         if(extras != null){
-            if(extras.getString("ACTIONACCEPT","false").equals("true")){
-                String StudentID = extras.getString("STUDID");
+            Log.e(TAG,"Extras -- "+extras.getString("ACTIONACCEPT"));
+            if(extras.getString("ACTIONACCEPT").equals("true")){
+                final String StudentID = extras.getString("STUDID");
+                final String busid = extras.getString("BUSID");
                 RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
                 final String url = getString(R.string.server_address)+"acceptmissedbus.php";
                 StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
@@ -74,7 +77,8 @@ public class MissedPeopleService extends Service {
                     @Override
                     protected Map<String, String> getParams() {
                         Map<String, String> params = new HashMap<String, String>();
-                        params.put("studid",busID+"");
+                        params.put("studid",StudentID);
+                        params.put("busid",busid);
                         params.put("accept","true");
                         return params;
                     }
@@ -84,7 +88,8 @@ public class MissedPeopleService extends Service {
                 queue.add(stringRequest);
             }
             else{
-                String StudentID = extras.getString("STUDID");
+                final String StudentID = extras.getString("STUDID");
+                final String busid = extras.getString("BUSID");
                 RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
                 final String url = getString(R.string.server_address)+"acceptmissedbus.php";
                 StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
@@ -109,7 +114,8 @@ public class MissedPeopleService extends Service {
                     @Override
                     protected Map<String, String> getParams() {
                         Map<String, String> params = new HashMap<String, String>();
-                        params.put("studid",busID+"");
+                        params.put("studid",StudentID);
+                        params.put("busid",busid);
                         params.put("accept","false");
                         return params;
                     }
@@ -142,37 +148,38 @@ public class MissedPeopleService extends Service {
                                                         if(found.equals("true")){
                                                             String studentID = jb.getString("studentID");
                                                             String stopname = jb.getString("stopName");
+
                                                             Intent snoozeIntent = new Intent(MissedPeopleService.this, MissedPeopleService.class);
                                                             snoozeIntent.putExtra("ACTIONACCEPT","true");
                                                             snoozeIntent.putExtra("STUDID",studentID);
                                                             Log.i(TAG,"Performing notification things");
                                                             //snoozeIntent.putExtra(EXTRA_NOTIFICATION_ID, 0);
                                                             PendingIntent snoozePendingIntent =
-                                                                    PendingIntent.getService(MissedPeopleService.this, 0, snoozeIntent, 0);
+                                                                    PendingIntent.getService(MissedPeopleService.this, new Random().nextInt(), snoozeIntent,PendingIntent.FLAG_CANCEL_CURRENT);
                                                             Intent snoozeIntent2 = new Intent(MissedPeopleService.this, MissedPeopleService.class);
-                                                            snoozeIntent2.putExtra("ACTIONACCEPT","false");
+                                                            snoozeIntent2.putExtra("ACTIONACCEPT","fALse");
                                                             snoozeIntent2.putExtra("STUDID",studentID);
                                                             //snoozeIntent.putExtra(EXTRA_NOTIFICATION_ID, 0);
                                                             PendingIntent snoozePendingIntent2 =
-                                                                    PendingIntent.getService(MissedPeopleService.this, 0, snoozeIntent2, 0);
+                                                                    PendingIntent.getService(MissedPeopleService.this, new Random().nextInt(), snoozeIntent2, PendingIntent.FLAG_CANCEL_CURRENT);
                                                             NotificationManager mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
                                                             if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
-                                                                NotificationChannel channel= new NotificationChannel(CHANNEL_ID,CHANNEL_NAME,NotificationManager.IMPORTANCE_DEFAULT);
+                                                                NotificationChannel channel= new NotificationChannel(CHANNEL_ID,CHANNEL_NAME,NotificationManager.IMPORTANCE_LOW);
                                                                 channel.setDescription("To display prompts to accept or deny requests");
                                                                 mNotificationManager.createNotificationChannel(channel);
                                                             }
                                                             Intent MissedPeopleActivityIntent = new Intent(MissedPeopleService.this,MissedPeople.class);
-                                                            PendingIntent pendingContentIntent = PendingIntent.getActivity(MissedPeopleService.this,0,MissedPeopleActivityIntent,0);
+                                                            PendingIntent pendingContentIntent = PendingIntent.getActivity(MissedPeopleService.this,new Random().nextInt(),MissedPeopleActivityIntent,PendingIntent.FLAG_CANCEL_CURRENT);
                                                             NotificationCompat.Builder builder = new NotificationCompat.Builder(MissedPeopleService.this, CHANNEL_ID)
                                                                     .setSmallIcon(R.drawable.busimage)
                                                                     .setContentIntent(pendingContentIntent)
                                                                     .setContentTitle("Missed the Bus")
                                                                     .setContentText("Accept to stop at "+stopname+" ?")
                                                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                                                    .addAction(R.drawable.busimage, "ACCEPT",
-                                                                            snoozePendingIntent)
-                                                                    .addAction(R.drawable.busimage, "DENY",
-                                                                            snoozePendingIntent2);
+                                                                    .setAutoCancel(true);
+                                                                    //.addAction(R.drawable.busimage, "DENY",SnoozePendingIntent2)
+                                                                    //.addAction(R.drawable.busimage, "ACCEPT",snoozePendingIntent2)
+
                                                             mNotificationManager.notify(0,builder.build());
                                                             Log.i(TAG,"Displayed Notif!");
                                                         }else{
@@ -192,7 +199,7 @@ public class MissedPeopleService extends Service {
                                         @Override
                                         protected Map<String, String> getParams() {
                                             Map<String, String> params = new HashMap<String, String>();
-                                            params.put("busid",busID+"");
+                                            params.put("busid",busID);
                                             return params;
                                         }
                                     };
